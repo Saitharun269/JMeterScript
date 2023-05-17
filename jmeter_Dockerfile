@@ -1,0 +1,37 @@
+#1 Creating docker image on top of ubuntu
+
+FROM ubuntu:20.04
+
+MAINTAINER Bairi_Saitharun  <saitharubairi123@gmail.com>
+
+#2 Defining the versions and folders
+
+ARG JMETER_VERSION="5.5"
+ENV JMETER_HOME /opt/apache-jmeter-${JMETER_VERSION}
+
+#3 Making the JMETER_HOME as the work directory then update and install the needed packages
+
+WORKDIR ${JMETER_HOME}
+RUN  apt-get -y update \
+&& apt-get install -y wget gnupg curl
+
+#4 Downloading  Apache JMeter
+
+RUN wget https://dlcdn.apache.org//jmeter/binaries/apache-jmeter-${JMETER_VERSION}.tgz
+RUN tar -xzf apache-jmeter-${JMETER_VERSION}.tgz
+RUN mv apache-jmeter-${JMETER_VERSION}/* /opt/apache-jmeter-${JMETER_VERSION}
+RUN rm -r /opt/apache-jmeter-${JMETER_VERSION}/apache-jmeter-${JMETER_VERSION}
+
+#5 Downloading and Installing few other needed packages to run our test plans 
+
+RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
+&& apt-get update \
+&& apt-get install -y --no-install-recommends \
+git \
+openjdk-8-jre-headless
+
+#6 Setting the Java home and update the ca-certificates
+
+ENV JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
+ENV PATH="$JAVA_HOME/bin:${PATH}"
+RUN update-ca-certificates
